@@ -1,0 +1,146 @@
+
+body, html {
+    margin: 0;
+    padding: 0;
+
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 100%;
+}
+
+canvas{
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+
+    /* border: solid #aaa 1px; */
+
+;
+}
+
+#canvas-frame {
+    /* width:75%; */
+    
+
+    margin: 0 310px 0 0;
+    padding: 30px;
+}
+
+#toolbox{
+    width: 220px;
+    background-color: #f5f5f5;
+    color: #666;
+
+    position: absolute;
+    top: 30px;
+    right: 30px;
+
+    padding: 20px;
+
+
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    border-radius: 10px;
+
+    box-shadow:         1px 1px 6px 0px #ccc;
+}
+
+
+h1 {
+    display: inline-block;
+    font-size: 100%;
+    margin: 0;
+    padding: 2px;
+}
+
+.toolbox-separator {
+    text-align: center;
+    margin: 25px 0;
+    position: relative;
+}
+
+.toolbox-separator div {
+    height: 1px;
+    background-color: #ccc;
+}
+
+.toolbox-separator span {
+    font-size: 70%;
+    font-weight: bold;
+    color: #999;
+    position: absolute;
+    background-color: #f5f5f5;
+    top: -5px;
+    left: 80px;
+    right: 80px;
+}
+
+.toolbox-line {
+    position: relative;
+}
+
+.toolbox-line.top {
+    margin-bottom: 40px;
+}
+
+.toolbox-line.form{
+    margin: 15px 0px;
+}
+
+.toolbox-line.form label {
+    display: inline-block;
+    width: 100px;
+    font-size: 90%;
+}
+
+.toolbox-line.form input,
+.toolbox-line.form select {
+    display: inline-block;
+    width: 70px;
+    padding: 2px;
+    font-size: 100%;
+    background-color: transparent;
+    border: none;
+    border-bottom: solid #ccc 1px;
+}
+
+.toolbox-line.form input,
+.toolbox-line.form select
+{
+    text-align: right;
+    font-family: monospace;
+}
+
+.toolbox-line.form span.unit {
+    display: inline-block;
+    margin: 2px 0 0 4px;
+    font-size: 80%;
+}
+
+#status-text {
+    display: inline-block;
+    position: absolute;
+    right: 0;
+    top: 0;
+
+    color: #fff;
+    padding: 4px 6px;
+    font-size: 75%;
+    
+    border-radius: 5px;
+}
+
+#status-text.ok {
+    background-color: green;
+}
+
+#status-text.err {
+    background-color: red;
+}
+
+#status-text.warn {
+    background-color: orange;
+}
+
+#status-text.info {
+    background-color: grey;
+}

@@ -1,0 +1,90 @@
+
+<!doctype html>
+<html>
+
+<head>
+	<title>Line Chart - Cubic interpolation mode</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0/dist/Chart.min.js"></script>
+    
+    <link rel="stylesheet" href="style.css">
+	
+</head>
+
+<body>
+
+    <div id="frame">
+
+        <div id="canvas-frame">
+            <canvas id="canvas"></canvas>
+        </div>
+        
+        <div id="toolbox">
+            <div id="status" class="toolbox-line top">
+                <h1>I-V curve</h1>
+                <span id="status-text" class="info">Connecting...</span>
+            </div>
+
+            <div class="toolbox-separator">
+                <div></div>
+                <span>Measure</span>
+            </div>
+
+            <div class="toolbox-line form">
+                <label>U<sub>max</sub></label>
+                <input type="number" id="input-umax" value="5">
+                <span class="unit">V</span>
+            </div>
+
+            <div class="toolbox-line form">
+                <label>I<sub>max</sub></label>
+                <input type="number" id="input-imax" value="200">
+                <span class="unit">mA</span>
+            </div>
+
+            <div class="toolbox-line form">
+                <label>Steps</label>
+                <input type="number" id="input-steps" value="10">
+            </div>
+
+
+            <div class="toolbox-line form">
+                <label>Delay</label>
+                <input type="number" id="input-delay" value="100">
+                <span class="unit">ms</span>
+            </div>
+
+            <div class="toolbox-line form">
+                    <label>Mode</label>
+                    <select id="input-mode">
+                        <option value="cv">CV</option>
+                        <option value="cc">CC</option>
+                        <option value="ad" selected>Adaptive</option>
+                        <option value="rnd">RND</option>
+                    </select>
+                </div>
+
+                <div class="toolbox-separator">
+                    <div></div>
+                    <span>Display</span>
+                </div>
+
+                <div class="toolbox-line form">
+                        <label>Plot line</label>
+                        <input type="checkbox">
+                    </div>
+
+                <div class="toolbox-separator">
+                    <div></div>
+                    <span>Controll</span>
+                </div>
+
+            <div class="toolbox-line">
+                <button id="start-btn">Start</button>
+            </div>
+        </div>
+
+    </div>
+    
+    <script src="main.js"></script>
+</body>
+</html>
