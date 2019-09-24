@@ -1,16 +1,13 @@
 // Communication for DPS5005
 
-var ModbusRTU = require("modbus-serial");
+import ModbusRTU from "modbus-serial";
 
-
-class DPS5005CNC
+export class DPS5005CNC
 {
-
     constructor (port) 
     {
-        this._client = new ModbusRTU();
-
-        
+        this._port = port;
+        this._client = new ModbusRTU();       
     }
 
     async connect()
@@ -21,8 +18,9 @@ class DPS5005CNC
         }
 
         let p = new Promise(resolve => {
-            this._client.connectRTU("COM3", { baudRate: 9600 }, () => {
+            this._client.connectRTU(this._port, { baudRate: 9600 }, () => {
                 this._client.setID(1);
+                this._client.setTimeout(5000);
                 resolve();
             });
         });
@@ -174,6 +172,16 @@ class DPS5005CNC
     {
         await this.writeRegisters(0x00, [u * 100, i * 1000]);
     }
+
+    // --- Output pins ---
+
+    async setRtsPin(value)
+    {
+        return new Promise((resolve) => {
+            this._client._port.set({rts: value}, resolve);
+        });
+    }
 }
 
-exports.DPS5005CNC = DPS5005CNC;
+// const _DPS5005CNC = DPS5005CNC;
+// export { _DPS5005CNC as DPS5005CNC };

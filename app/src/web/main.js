@@ -20,35 +20,38 @@ var config = {
             {
                 label: 'VA',
                 data: points,
-                borderColor: 'black',
-                //backgroundColor: 'rgba(0, 0, 0, 0)',
+                borderColor: '#333',
+                backgroundColor: 'red',
                 fill: false,
                 cubicInterpolationMode: 'monotone',
-                showLine: false,
-                borderWidth: 2,
+                showLine: true,
+                borderWidth: 1,
 
                 pointBorderWidth: 0,
-                pointRadius: 3,
+                pointRadius: 5,
                 pointRotation: 45,
                 pointBorderColor: "red",
+                
                 pointStyle: "cross"
             }
         ]
     },
     
     options: { 
-        //options: {
-            responsive: true,
-            aspectRatio: 1,
+        
+        responsive: true,
+        aspectRatio: 1,
             
-        //},
+        
         scales: {
             xAxes: [{
                 scaleLabel: {
                     display: true,
-                    labelString: 'Voltage'
+                    labelString: 'Voltage [V]',
+                    fontSize: 15
                 },
                 ticks: {
+                    fontSize: 15,
                     suggestedMin: 0,
                     suggestedMax: 5.1
                 }
@@ -56,13 +59,19 @@ var config = {
             yAxes: [{
                 scaleLabel: {
                     display: true,
-                    labelString: 'Current'
+                    labelString: 'Current [mA]',
+                    fontSize: 15
                 },
                 ticks: {
+                    fontSize: 15,
                     suggestedMin: 0,
                     suggestedMax: 0.02
                 }
             }]
+        },
+
+        legend: {
+            display: false
         }
     }
 };
@@ -72,50 +81,100 @@ window.onload = function() {
     window.myLine = new Chart(ctx, config);
 
     document.getElementById("start-btn").addEventListener("click", onStartClick);
+    
+    document.getElementById("plot-line").addEventListener("click", updateStyleChart);
+    document.getElementById("plot-contrast").addEventListener("click", updateStyleChart);
+
+    connect();
+    updateStyleChart();
 };
 
+var socket;
 
+function connect()
+{
+    setStatus("Connecting...", "warn");
 
-const socket = new WebSocket('ws://localhost:8080');
-
-// Connection opened
-socket.addEventListener('open', function (event) {
-    console.log("WS Open");
-    socket.send('{}');
-
-    setStatus("Ready", "ok");
-});
-
-socket.addEventListener("error", function (err) {
-    console.log(err);
+    const wsUrl = "ws://" + location.host + "/ws";
+    socket = new WebSocket(wsUrl);
     
-    setStatus("Disconected", "err");
-})
-
-// Listen for messages
-socket.addEventListener('message', function (event) {
-    console.log('Message from server ', event.data);
-    var o = JSON.parse(event.data);
+    // Connection opened
+    socket.addEventListener('open', function (event) {
+        console.log("WS Open");
+        setStatus("Ready", "ok");
+    });
     
-    if (o.stop)
+    // WS Error
+    socket.addEventListener("error", function (err) {
+        console.log(err);
+        socket.close();
+    })
+
+    socket.addEventListener("close", function () {
+        setStatus("Disconected", "err");
+        setTimeout(connect, 2000);
+    });
+    
+    // Listen for messages
+    socket.addEventListener('message', function (event) {
+        console.log('Message from server ', event.data);
+        var o = JSON.parse(event.data);
+        processMessage(o);
+    });
+}
+
+function processMessage(message)
+{
+    if (message.stop)
     {
         running = false;
         updateUi();
     }
     else
     {
-        points.push({
-            x: o.u, y:o.i
-        });
+        addPointToChart(message.u, message.i)
+    }    
+}
 
-        window.myLine.update();
+function addPointToChart(u, i)
+{
+    var p = {
+        x:u, 
+        y:i*1000
+    };
+
+    points[(u > 0) ? "push" : "unshift"](p);;
+
+    window.myLine.update();
+}
+
+function clearChart()
+{
+    points.length = 0;
+    window.myLine.update();
+}
+
+function updateStyleChart()
+{
+    var line = document.getElementById("plot-line").checked;    
+    config.data.datasets[0].showLine = line;
+
+    var highContrast = document.getElementById("plot-contrast").checked;
+    if (highContrast)
+    {
+        config.data.datasets[0].borderWidth = 3;
+        config.data.datasets[0].pointRadius = 4;
+        config.data.datasets[0].pointStyle = "circle";
+    }
+    else
+    {
+        config.data.datasets[0].borderWidth = 1;
+        config.data.datasets[0].pointRadius = 4;
+        config.data.datasets[0].pointStyle = "cross";
     }
 
-    //points.sort((a, b) => a.x - b.x);
-
-    
-
-});
+    window.myLine.update();
+}
 
 function call(op, params)
 {
@@ -155,8 +214,6 @@ function onStartClick()
     if (running)
     {
         // stop
-        running = false;
-
         call("stop");
     }
     else
@@ -165,9 +222,27 @@ function onStartClick()
         running = true;
         var params = getParameters();
 
-        config.options.scales.xAxes[0].ticks.suggestedMax = params.umax;
-        config.options.scales.yAxes[0].ticks.suggestedMax = params.imax / 1000;
-        window.myLine.update();
+        var min, max;
+
+        switch (params.q)
+        {
+            case "1":
+                min = 0; max = 1;
+                break;
+            case "3":
+                min = -1; max = 0;
+                break;
+            case "b":
+                min = -1; max = 1;
+                break;
+        }
+
+        config.options.scales.xAxes[0].ticks.suggestedMax = max * params.umax;
+        config.options.scales.xAxes[0].ticks.suggestedMin = min * params.umax;
+        config.options.scales.yAxes[0].ticks.suggestedMax = max * params.imax;
+        config.options.scales.yAxes[0].ticks.suggestedMin = min * params.imax;
+        
+        clearChart();
 
         call("start", params);
     }
@@ -182,7 +257,8 @@ function getParameters()
         "imax": parseInt(document.getElementById("input-imax").value, 10),
         "steps": parseInt(document.getElementById("input-steps").value, 10),
         "delay": parseInt(document.getElementById("input-delay").value, 10),
-        "mode": document.getElementById("input-mode").value
+        "mode": document.getElementById("input-mode").value,
+        "q": document.getElementById("input-q").value
     };
 
     console.log(p);

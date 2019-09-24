@@ -1,7 +1,10 @@
 const EventEmitter = require('events');
 
-const cnc = require("./cnc").DPS5005CNC;
-const sleep = require("./helpers").sleep;
+//const cnc = require("./cnc").DPS5005CNC;
+
+import {DPS5005CNC} from "./cnc";
+
+import {sleep} from "./helpers";
 
 
 class Runtime extends EventEmitter
@@ -10,7 +13,7 @@ class Runtime extends EventEmitter
     {
         super();
 
-        this._dps = new cnc();
+        this._dps = new DPS5005CNC("COM3");
 
         this._stopped();
     }
@@ -69,6 +72,7 @@ class Runtime extends EventEmitter
     {
         this._running = false;
         this._cancelld = false;
+        this._negative = false;
 
         console.log("Stopped");
 
@@ -82,6 +86,7 @@ class Runtime extends EventEmitter
         this._Steps = parseInt(this._params.steps, 10);
         this._Delay = parseInt(this._params.delay, 10);
         this._Mode = this._params.mode;
+        this._Q = this._params.q;
 
         if(isNaN(this._UMax) || this._UMax <= 0 || this._UMax > 40) {
             throw "Invalid UMax";
@@ -102,35 +107,31 @@ class Runtime extends EventEmitter
         if (!this._Mode) {
             throw "Invalid Mode";
         }
+        
+        if (!this._Q) {
+            throw "Invalid Mode";
+        }
     }
 
     async _run()
     {
-        console.log(`Run with Umax ${this._UMax}, Imax ${this._IMax}, steps ${this._Steps}, delay ${this._Delay}`);
+        console.log(`Run with Umax ${this._UMax}, Imax ${this._IMax}, steps ${this._Steps}, delay ${this._Delay}, q ${this._Q}`);
         
         await  this._dps.connect();
 
         try
         {
-            switch(this._Mode)
+            if (this._Q == "1" || this._Q == "b")
             {
-                case "cv":
-                    await this._runCV();
-                    break;
-                case "cc":
-                    await this._runCC();
-                    break;
-                case "ad":
-                    await this._runAdaptive();
-                    break;
-                case "rnd":
-                    await this._runRandom();
-                    break;
-                default:
-                    console.log("Unknown mode");
-                    this._stopped();
+                this._negative = false;
+                await this._measure();
             }
             
+            if (this._Q == "3" || this._Q == "b")
+            {
+                this._negative = true;
+                await this._measure();
+            }
         } 
         catch(e)
         {
@@ -142,11 +143,39 @@ class Runtime extends EventEmitter
         this._stopped();
     }
 
+    async _measure()
+    {
+        switch(this._Mode)
+        {
+            case "cv":
+                await this._runCV();
+                break;
+            case "cc":
+                await this._runCC();
+                break;
+            case "ad":
+                await this._runAdaptive();
+                break;
+            case "rnd":
+                await this._runRandom();
+                break;
+            default:
+                console.log("Unknown mode");
+                this._stopped();
+        }
+    }
+
     _addPoint(u, i)
     {
         if (this._running == false || this._cancelld == true)
         {
             throw "Cancelld";
+        }
+
+        if (this._negative)
+        {
+            u *= -1;
+            i *= -1;
         }
 
         const p = {
