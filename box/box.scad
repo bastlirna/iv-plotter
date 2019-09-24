@@ -1,16 +1,16 @@
 
 $fn = 30;
 
-H = 17;
-W = 35;
-D = 35;
+H = 18;
+W = 40;
+D = 40;
 label_size = 15;
 rs = 1;
 rt = rs;
-t = 1.6;
+t = 2;
 
 hole = 8;
-hole_dist = 16;
+hole_dist = 19;
 
 font="Liberation Sans:style=Bold";
 
@@ -68,14 +68,14 @@ cube([100, 20, 100]);
 */
 
 
-/*
+
 for(x = [0 : 1 : 2]) {
     for(y = [0 : 1 : 2]) {
-        translate([x * (D + 10), y * (W + 10), 0]) box(str(x*3 + y));
+        translate([x * (D + 10), y * (W + 10), 0]) box(chr(x*3 + y + 65));
     }
-}*/
+}
 
-box("?");
+//box("?");
 
 /*
 translate([D / 2, W, H/2]) {
