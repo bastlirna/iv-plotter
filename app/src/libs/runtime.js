@@ -124,12 +124,14 @@ class Runtime extends EventEmitter
             if (this._Q == "1" || this._Q == "b")
             {
                 this._negative = false;
+                await this._dps.setRtsPin(true);
                 await this._measure();
             }
             
             if (this._Q == "3" || this._Q == "b")
             {
                 this._negative = true;
+                await this._dps.setRtsPin(false);
                 await this._measure();
             }
         } 
@@ -139,6 +141,7 @@ class Runtime extends EventEmitter
         }
 
         await this._dps.setOnOff(0);
+        await this._dps.setRtsPin(true); // off
 
         this._stopped();
     }
