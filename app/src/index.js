@@ -1,9 +1,20 @@
 import http from 'http';
 import path from 'path';
 import express from 'express';
+import minimist from 'minimist';
 
 import { Runtime } from "./libs/runtime";
 import { SingleWebSocket } from "./libs/server";
+
+const serverPort = 8000;
+
+// Arguments
+var port = process.argv[2];
+
+if (port === undefined)
+{
+    throw "Mising port"
+}
 
 // HTTP server
 const app = express();
@@ -14,7 +25,7 @@ const server = http.createServer(app);
 const wss = new SingleWebSocket(server);
 
 // Runtime
-const runtime = new Runtime();
+const runtime = new Runtime(port);
 
 runtime.on("stop", () => {
     console.log("runtime stop event");
@@ -27,7 +38,6 @@ runtime.on("point", (u, i) => {
 
 wss.on('connection', (ws) => {
     console.log("New connection");
-
     // TODO send current status
 });
 
@@ -53,9 +63,4 @@ wss.on('message', msg => {
 
 });
 
-
-const port = 8000;
-
-//app.listen(port, () => console.log(`Example app listening on port ${port}!`))
-
-server.listen(port, () => console.log(`Server listening on port ${port}`));
+server.listen(serverPort, () => console.log(`Server listening on port ${serverPort}`));

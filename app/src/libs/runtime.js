@@ -9,13 +9,14 @@ import {sleep} from "./helpers";
 
 class Runtime extends EventEmitter
 {
-    constructor () 
+    constructor (port) 
     {
         super();
 
-        this._dps = new DPS5005CNC("COM3");
+        console.log(`Communication on port ${port}`);
+        this._dps = new DPS5005CNC(port);
 
-        this._stopped();
+        setTimeout(() => this._stopped(), 100);
     }
 
     start(params) 
@@ -74,7 +75,7 @@ class Runtime extends EventEmitter
         this._cancelld = false;
         this._negative = false;
 
-        console.log("Stopped");
+        console.log("Ready");
 
         this.emit("stop");
     }

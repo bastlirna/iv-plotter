@@ -28,7 +28,7 @@ This application is there for more demo or tool for explaining what is IV curve 
 git clone git@github.com:bastlirna/iv-plotter.git
 cd app
 npm install
-npm start
+npm start ttyUSB0
 ```
 
 And enjoy... 
